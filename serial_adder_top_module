@@ -1,0 +1,70 @@
+module serial_adder #(
+    parameter N = 4
+)(
+    input clk,
+    input reset,
+    input load,
+    input shift,
+    input [N-1:0] A,
+    input [N-1:0] B,
+
+    output [N-1:0] SUM,
+    output carry_final
+);
+
+wire [N-1:0] regA;
+wire [N-1:0] regB;
+
+wire sum_bit;
+wire carry_out;
+wire carry_q;
+
+
+// Shift Register A
+shift_register #(.N(N)) SR_A (
+    .clk(clk),
+    .reset(reset),
+    .load(load),
+    .shift(shift),
+    .parallel_in(A),
+    .serial_in(sum_bit),
+    .q(regA)
+);
+
+
+// Shift Register B
+shift_register #(.N(N)) SR_B (
+    .clk(clk),
+    .reset(reset),
+    .load(load),
+    .shift(shift),
+    .parallel_in(B),
+    .serial_in(1'b0),
+    .q(regB)
+);
+
+
+// Full Adder
+full_adder FA (
+    .a(regA[0]),
+    .b(regB[0]),
+    .cin(carry_q),
+    .sum(sum_bit),
+    .cout(carry_out)
+);
+
+
+// Carry Flip-Flop
+D_FF carry_ff (
+    .clk(clk),
+    .rst(reset),
+    .d(carry_out),
+    .q(carry_q)
+);
+
+
+// Outputs
+assign SUM = regA;
+assign carry_final = carry_q;
+
+endmodule
