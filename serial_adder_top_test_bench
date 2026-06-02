@@ -1,0 +1,82 @@
+module serial_adder_tb;
+
+parameter N = 4;
+
+reg clk;
+reg reset;
+reg load;
+reg shift;
+
+reg [N-1:0] A;
+reg [N-1:0] B;
+
+wire [N-1:0] SUM;
+wire carry_final;
+
+
+// DUT
+serial_adder #(.N(N)) uut (
+    .clk(clk),
+    .reset(reset),
+    .load(load),
+    .shift(shift),
+    .A(A),
+    .B(B),
+    .SUM(SUM),
+    .carry_final(carry_final)
+);
+
+
+// Clock Generation
+always #5 clk = ~clk;
+
+
+// Stimulus
+initial begin
+
+    clk   = 0;
+    reset = 1;
+    load  = 0;
+    shift = 0;
+
+    A = 0;
+    B = 0;
+
+    #10;
+
+    // Release Reset
+    reset = 0;
+
+    // Example:
+    // A = 11 (1011)
+    // B = 6  (0110)
+
+    A = 4'b1011;
+    B = 4'b0110;
+
+    // Load data
+    load = 1;
+    #10;
+
+    load = 0;
+
+    // Start serial addition
+    shift = 1;
+
+    // Wait for N shifts
+    #(N*10);
+
+    shift = 0;
+
+    #10;
+
+    $display("A = %b", A);
+    $display("B = %b", B);
+    $display("SUM = %b", SUM);
+    $display("CARRY = %b", carry_final);
+
+    $finish;
+
+end
+
+endmodule
